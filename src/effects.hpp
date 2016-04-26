@@ -1,13 +1,13 @@
 //
-//  effect.h
+//  effect.hpp
 //  emptyExample
 //
 //  Created by Mark van de Korput on 16-04-19.
 //
 //
 
-#ifndef effect_h
-#define effect_h
+#ifndef effect_hpp
+#define effect_hpp
 
 #include "ofMain.h"
 
@@ -91,4 +91,4 @@ namespace of2030{ namespace effects {
 
 }} // namespace of2030{ namespace effects {
 
-#endif /* effect_h */
+#endif /* effect_hpp */

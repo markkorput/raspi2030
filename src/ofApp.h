@@ -4,7 +4,7 @@
 #include "xml_settings.h"
 #include "client_info.h"
 #include "interface.hpp"
-
+#include "osc_receiver.hpp"
 
 class ofApp : public ofBaseApp{
 	public:
@@ -29,5 +29,5 @@ class ofApp : public ofBaseApp{
 		of2030::XmlSettings *xml_settings;
 		of2030::ClientInfo *client_info;
 		of2030::Interface *interface;
-
+		of2030::OscReceiver osc_receiver;
 };

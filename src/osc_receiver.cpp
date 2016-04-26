@@ -12,6 +12,13 @@
 
 using namespace of2030;
 
+OscReceiver::OscReceiver(){
+  // defaults
+  m_port = 2030;
+  m_interface = NULL;
+  m_bConnected = false;
+}
+
 void OscReceiver::configure(unsigned int port, Interface* interface){
     m_port = port;
 
@@ -74,16 +81,17 @@ void OscReceiver::destroy(){
 }
 
 bool OscReceiver::connect(){
-    m_oscReceiver.enableReuse();
+    // m_oscReceiver.enableReuse();
+    m_oscReceiver.setup(m_port);
 
-    if(m_oscReceiver.setup(m_port)){
-        m_bConnected = true;
-        ofLog() << "of2030::OscReceiver listening to port: " << m_port;
-        return true;
-    }
+    // if(!success){
+      // ofLogWarning() << "OscReceiver could not start listening to port: " << m_port;
+      // return false;
+    // }
 
-    ofLogWarning() << "OscReceiver could not start listening to port: " << m_port;
-    return false;
+    m_bConnected = true;
+    ofLog() << "of2030::OscReceiver listening to port: " << m_port;
+    return true;
 }
 
 void OscReceiver::disconnect(){

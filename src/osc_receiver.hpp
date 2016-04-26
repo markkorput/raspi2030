@@ -21,7 +21,7 @@ namespace of2030 {
         const static int MAX_MESSAGES_PER_CYCLE = 10;
 
     public:
-        OscReceiver() : m_port(2030), m_interface(NULL), m_bConnected(false){}
+        OscReceiver();
         ~OscReceiver(){ destroy(); }
         void configure(unsigned int port=2030, Interface* interface=NULL);
         void setup();
@@ -41,7 +41,7 @@ namespace of2030 {
         effects::Effect* createEffectFromJsonString(const std::string &json_string);
 
     private: // attributes
-        Interface* m_interface;
+        Interface *m_interface;
         ofxOscReceiver m_oscReceiver;
         bool m_bConnected;
         unsigned int m_port;

@@ -11,6 +11,8 @@ void ofApp::setup(){
   client_info->id = xml_settings->client_id;
 
   interface = of2030::Interface::instance();
+
+  osc_receiver.configure(xml_settings->osc_port, interface);
 }
 
 //--------------------------------------------------------------
