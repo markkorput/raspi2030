@@ -1,13 +1,13 @@
 //
-//  client_info.h
+//  client_info.hpp
 //  emptyExample
 //
 //  Created by Mark van de Korput on 16-04-25.
 //
 //
 
-#ifndef client_info_h
-#define client_info_h
+#ifndef client_info_hpp
+#define client_info_hpp
 
 namespace of2030{
     class ClientInfo {
@@ -25,4 +25,4 @@ namespace of2030{
         int id, index, count;
     };
 }
-#endif /* client_info_h */
+#endif /* client_info_hpp */

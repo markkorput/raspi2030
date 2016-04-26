@@ -41,6 +41,7 @@ namespace of2030 {
         effects::Effect* createEffectFromJsonString(const std::string &json_string);
 
     private: // attributes
+
         Interface *m_interface;
         ofxOscReceiver m_oscReceiver;
         bool m_bConnected;
