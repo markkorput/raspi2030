@@ -22,6 +22,14 @@ namespace of2030 {
         const static int WIDTH = 768;
         const static int HEIGHT = 576;
 
+    public: // singleton accessor method
+
+        static Renderer* instance();
+
+    private: // singleton static attribute
+
+        static Renderer* singleton;
+
     public: // methods
         Renderer();
         ~Renderer();

@@ -16,7 +16,7 @@ void ofApp::setup(){
   osc_receiver.configure(xml_settings->osc_port, interface);
 
   // visual playback system
-  player = of2030::instance();
+  player = of2030::Player::instance();
   renderer = of2030::Renderer::instance();
 
   renderer->setup();
@@ -28,17 +28,31 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
   osc_receiver.update();
+  player->update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-
+  renderer->draw();
 }
 
 //--------------------------------------------------------------
 void ofApp::exit(ofEventArgs &args){
+  osc_receiver.destroy();
+  interface_player_bridge.stop();
+
+  delete renderer;
+  renderer = NULL;
+
+  delete player;
+  player = NULL;
+
+  delete interface;
+  interface = NULL;
+
   delete client_info;
   client_info = NULL;
+
   delete xml_settings;
   xml_settings = NULL;
 }

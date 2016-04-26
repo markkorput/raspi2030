@@ -12,6 +12,15 @@
 using namespace of2030;
 using namespace of2030::effects;
 
+Renderer* Renderer::singleton = NULL;
+
+Renderer* Renderer::instance(){
+    if (!singleton){   // Only allow one instance of class to be generated.
+        singleton = new Renderer();
+    }
+    return singleton;
+}
+
 Renderer::Renderer(){
     fbo = NULL;
     player = NULL;
@@ -30,8 +39,9 @@ void Renderer::setup(){
         m_bPrivateFbo = true;
     }
 
-    if(!fbo->isAllocated())
+    if(!fbo->isAllocated()){
         fbo->allocate(WIDTH, HEIGHT);
+    }
 
     if(!player){
         player = Player::instance();
@@ -59,7 +69,7 @@ void Renderer::draw(){
     fbo->begin();
 
     int size = player->active_effects.size();
-    ofLogVerbose() << "[Renderer] active effects: " << size;
+    // ofLogVerbose() << "[Renderer] active effects: " << size;
 
     Context context;
     context.time = player->getTime();
