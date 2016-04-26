@@ -22,7 +22,7 @@ XmlSettings* XmlSettings::instance(){
     return singleton;
 }
 
-XmlSettings::XmlSettings() : path("settings.xml"){
+XmlSettings::XmlSettings() : path("settings.xml"), loaded(false){
   if(singleton == NULL){
     singleton = this;
   } else {
@@ -30,13 +30,17 @@ XmlSettings::XmlSettings() : path("settings.xml"){
   }
 };
 
-void XmlSettings::load(){
+void XmlSettings::load(bool reload){
+    if(loaded && !reload)
+      return;
+
     ofxXmlSettings xml;
     xml.loadFile(path);
     osc_port = xml.getValue("of2030:osc_port", 2030);
     client_id = xml.getValue("of2030:client_id", 1);
     screen_width = xml.getValue("of2030:screen_width", 768);
     screen_height = xml.getValue("of2030:screen_height", 576);
+    loaded = true;
 }
 
 void XmlSettings::save(){

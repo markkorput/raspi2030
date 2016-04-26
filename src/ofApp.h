@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "xml_settings.h"
+#include "client_info.h"
 
 class ofApp : public ofBaseApp{
 	public:
@@ -23,5 +24,6 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
 	private:
-		of2030::XmlSettings m_xml_settings;
+		of2030::XmlSettings *xml_settings;
+		of2030::ClientInfo *client_info;
 };

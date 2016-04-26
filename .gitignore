@@ -28,6 +28,7 @@
 *.app
 
 ._.DS_Store
+.DS_Store
 
 obj/*
 bin/libs/*

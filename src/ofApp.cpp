@@ -3,7 +3,12 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
   ofLogToFile("log.txt", true);
-  m_xml_settings.load();
+
+  xml_settings = of2030::XmlSettings::instance();
+  xml_settings->load();
+
+  client_info = of2030::ClientInfo::instance();
+  client_info->id = xml_settings->client_id;
 }
 
 //--------------------------------------------------------------
@@ -18,7 +23,10 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::exit(ofEventArgs &args){
-  // m_xml_settings.save();
+  delete client_info;
+  client_info = NULL;
+  delete xml_settings;
+  xml_settings = NULL;
 }
 
 //--------------------------------------------------------------
