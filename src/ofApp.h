@@ -3,6 +3,8 @@
 #include "ofMain.h"
 #include "xml_settings.h"
 #include "client_info.h"
+#include "interface.hpp"
+
 
 class ofApp : public ofBaseApp{
 	public:
@@ -26,4 +28,6 @@ class ofApp : public ofBaseApp{
 	private:
 		of2030::XmlSettings *xml_settings;
 		of2030::ClientInfo *client_info;
+		of2030::Interface *interface;
+
 };

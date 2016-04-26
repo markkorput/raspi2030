@@ -9,6 +9,8 @@ void ofApp::setup(){
 
   client_info = of2030::ClientInfo::instance();
   client_info->id = xml_settings->client_id;
+
+  interface = of2030::Interface::instance();
 }
 
 //--------------------------------------------------------------
