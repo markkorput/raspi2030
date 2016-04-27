@@ -26,3 +26,9 @@
 *.exe
 *.out
 *.app
+
+obj/*
+bin/libs/*
+
+bin/raspi2030
+bin/readMe.txt
