@@ -10,7 +10,7 @@
 #define interface_hpp
 
 #include "ofMain.h"
-#include "effects.h"
+#include "effects.hpp"
 
 namespace of2030 {
 

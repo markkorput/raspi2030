@@ -35,3 +35,4 @@ bin/libs/*
 
 bin/raspi2030
 bin/readMe.txt
+bin/data/log.txt
