@@ -27,6 +27,8 @@
 *.out
 *.app
 
+._.DS_Store
+
 obj/*
 bin/libs/*
 

@@ -2,7 +2,8 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-
+  ofLogToFile("log.txt", true);
+  m_xml_settings.load();
 }
 
 //--------------------------------------------------------------
@@ -13,6 +14,11 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 
+}
+
+//--------------------------------------------------------------
+void ofApp::exit(ofEventArgs &args){
+  // m_xml_settings.save();
 }
 
 //--------------------------------------------------------------
@@ -66,6 +72,6 @@ void ofApp::gotMessage(ofMessage msg){
 }
 
 //--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
+void ofApp::dragEvent(ofDragInfo dragInfo){
 
 }
