@@ -26,7 +26,7 @@ XmlSettings::XmlSettings() : path("settings.xml"){
   if(singleton == NULL){
     singleton = this;
   } else {
-    ofLogWarn() << "Non-singleton instance of XmlSettings constructed";
+    ofLogWarning() << "Non-singleton instance of XmlSettings constructed";
   }
 };
 
