@@ -15,10 +15,11 @@ void ofApp::setup(){
     {"warning", OF_LOG_WARNING},
     {"error", OF_LOG_ERROR},
     {"fatal", OF_LOG_FATAL_ERROR},
-    {"silent", OF_LOG_SILENT}
+    {"silent", OF_LOG_SILENT},
     {"", OF_LOG_NOTICE}
   };
   ofSetLogLevel(level_map[xml_settings->log_level]);
+  ofLogNotice(__func__) << "log level: " << xml_settings->log_level;
 
   client_info = of2030::ClientInfo::instance();
   client_info->id = xml_settings->client_id;
