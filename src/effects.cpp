@@ -117,8 +117,13 @@ void Stars::setup(Context &context){
 }
 
 void Stars::draw(Context &context){
+    float progress = ofMap(context.time, startTime, endTime, 250.0f, -50.0f);
+    float treshold = ofMap(context.time, startTime, endTime, 0.99999f, 0.96f);
+
     ofSetColor(255);
     shader->begin();
+    shader->setUniform2f("iPos", ofVec2f(0.0f, progress));
+    shader->setUniform1f("iThreshold", treshold);
     ofDrawRectangle(0, 0, context.fbo->getWidth(), context.fbo->getHeight());
     shader->end();
 }
