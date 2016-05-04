@@ -8,6 +8,8 @@
 
 #include "effects.hpp"
 #include "shader_manager.hpp"
+#include "video_manager.hpp"
+
 
 using namespace of2030::effects;
 
@@ -126,4 +128,25 @@ void Stars::draw(Context &context){
     shader->setUniform1f("iThreshold", treshold);
     ofDrawRectangle(0, 0, context.fbo->getWidth(), context.fbo->getHeight());
     shader->end();
+}
+
+
+
+Vid::Vid(){
+    type = EffectType::VID;
+    duration = 3.0f;
+}
+
+void Vid::setup(Context &context){
+    Effect::setup(context);
+    video_player = VideoManager::instance()->get("fingers.mov", true);
+    // video_player->setLoopState(OF_LOOP_NORMAL);
+    // TODO; loop? when to stop loop?
+    // notify manager when done?
+    video_player->play();
+}
+
+void Vid::draw(Context &context){
+    video_player->update();
+    video_player->draw(0,0);
 }

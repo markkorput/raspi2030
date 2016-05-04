@@ -59,13 +59,13 @@ void OscReceiver::update(){
         // }
 
         if(m.getAddress() == "/effect"){
-            ofLogVerbose() << "Got /effect OSC Message";
+            // ofLogVerbose() << "Got /effect OSC Message";
             processEffectMessage(m);
             continue;
         }
 
         if(m.getAddress() == "/message"){
-            ofLogVerbose() << "Got /message OSC Message";
+            // ofLogVerbose() << "Got /message OSC Message";
             processMessageMessage(m);
             continue;
         }
@@ -110,6 +110,7 @@ void OscReceiver::processEffectMessage(ofxOscMessage &m){
     }
 
     effects::Effect* effect = createEffectFromJsonString(m.getArgAsString(0));
+
     if(effect){
         // ofLog() << "[OscReceiver] Triggering interface's effectEvent";
         ofNotifyEvent(m_interface->effectEvent, *effect, m_interface);
@@ -194,6 +195,7 @@ void OscReceiver::processMessageMessage(ofxOscMessage &m){
     }
 
     string messageType = m.getArgAsString(0);
+    ofLogVerbose() <<  "[OscReceiver] /message " << messageType;
 
     if(messageType == "cursor"){
         effects::Cursor* cursor_effect = new effects::Cursor();
@@ -204,9 +206,14 @@ void OscReceiver::processMessageMessage(ofxOscMessage &m){
     if(messageType == "stars"){
         effects::Stars* effect = new effects::Stars();
         ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
-        ofLog() << "stars effect";
         return;
     }
 
-    ofLogWarning() << "Unknown /message param: " << messageType;
+    if(messageType == "vid"){
+        effects::Vid* effect = new effects::Vid();
+        ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
+        return;
+    }
+
+    ofLogWarning() << "Unknown /message type: " << messageType;
 }
