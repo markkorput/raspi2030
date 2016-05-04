@@ -24,7 +24,8 @@ namespace of2030{ namespace effects {
     enum EffectType{
         OFF = 0,
         COLOR = 1,
-        CURSOR = 2
+        CURSOR = 2,
+        STARS = 3
     };
 
     #define NO_TIME (-1.0f)
@@ -61,8 +62,8 @@ namespace of2030{ namespace effects {
 
     public: // methods
 
-        Off(){ type = EffectType::OFF; }
-        virtual void setup(Context &context);
+        Off();
+        // virtual void setup(Context &context);
         virtual void draw(Context &context);
     };
 
@@ -72,7 +73,7 @@ namespace of2030{ namespace effects {
 
     public: // methods
         Color();
-        virtual void setup(Context &context);
+        // virtual void setup(Context &context);
         virtual void draw(Context &context);
 
     public: // attributes
@@ -84,10 +85,22 @@ namespace of2030{ namespace effects {
 
     public: // methods
         Cursor();
+        // virtual void setup(Context &context);
+        virtual void draw(Context &context);
+    };
+
+
+
+    class Stars : public Effect{
+    public: // methods
+        Stars();
         virtual void setup(Context &context);
         virtual void draw(Context &context);
 
+    public: // attributes
+        ofShader shader;
     };
+
 
 }} // namespace of2030{ namespace effects {
 
