@@ -140,7 +140,9 @@ Vid::Vid(){
 void Vid::setup(Context &context){
     Effect::setup(context);
     video_player = VideoManager::instance()->get("fingers.mov", true);
-    video_player->setLoopState(OF_LOOP_NORMAL);
+    // video_player->setLoopState(OF_LOOP_NORMAL);
+    // TODO; loop? when to stop loop?
+    // notify manager when done?
     video_player->play();
 }
 
