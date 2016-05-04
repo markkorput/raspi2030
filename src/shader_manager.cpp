@@ -80,6 +80,8 @@ ofShader* ShaderManager::load(string name){
     shader->load(path+".vert", path+".frag");
     // store shader object for later reference
     shaders[name] = shader;
+    // log activity
+    ofLogNotice(__func__) << "shaders loaded: " << path;
     // return the ofShader pointer
     return shader;
 }
