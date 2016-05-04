@@ -189,7 +189,7 @@ void OscReceiver::processMessageMessage(ofxOscMessage &m){
     }
 
     if(m.getArgType(0) != OFXOSC_TYPE_STRING){
-        ofLogWarning() << "/effect didn't have string arg";
+        ofLogWarning() << "/message didn't have string arg";
         return;
     }
 
@@ -201,5 +201,12 @@ void OscReceiver::processMessageMessage(ofxOscMessage &m){
         return;
     }
 
-    ofLogWarning() << "Unknown messageType" << messageType;
+    if(messageType == "stars"){
+        effects::Stars* effect = new effects::Stars();
+        ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
+        ofLog() << "stars effect";
+        return;
+    }
+
+    ofLogWarning() << "Unknown /message param: " << messageType;
 }

@@ -7,6 +7,7 @@
 //
 
 #include "effects.hpp"
+#include "shader_manager.hpp"
 
 using namespace of2030::effects;
 
@@ -19,6 +20,18 @@ Effect::Effect() : startTime(NO_TIME), endTime(NO_TIME), type(EffectType::OFF) {
 }
 
 void Effect::setup(Context &context){
+  // make sure the effect has a start time;
+  // if it didn't get a startTime from the creator,
+  // simple take the current time from the context
+  if(!hasStartTime()){
+      startTime = context.time;
+  }
+
+  // try to calculate endTime from startTime and duration
+  // if endTime wasn't specified
+  if(hasDuration() && hasStartTime() && !hasEndTime()){
+      endTime = startTime + duration;
+  }
 }
 
 void Effect::draw(Context &context){
@@ -36,10 +49,9 @@ float Effect::getDuration(){
 }
 
 
-
-void Off::setup(Context &context){
+Off::Off(){
+  type = EffectType::OFF;
 }
-
 
 void Off::draw(Context &context){
     ofBackground(0);
@@ -53,21 +65,12 @@ Color::Color(){
     color = ofColor::black;
 }
 
-void Color::setup(Context &context){
-}
-
 void Color::draw(Context &context){
     ofBackground(color);
 }
 
 
 
-
-void Cursor::setup(Context &context){
-    if(!hasStartTime()){
-        startTime = context.time;
-    }
-}
 
 Cursor::Cursor(){
     type = EffectType::CURSOR;
@@ -100,6 +103,27 @@ void Cursor::draw(Context &context){
                     0,
                     3,
                     context.fbo->getHeight());
+}
 
 
+Stars::Stars(){
+    type = EffectType::STARS;
+    duration = 3.0;
+}
+
+void Stars::setup(Context &context){
+    Effect::setup(context);
+    shader = ShaderManager::instance()->get("Starfield01");
+}
+
+void Stars::draw(Context &context){
+    float progress = ofMap(context.time, startTime, endTime, 250.0f, -50.0f);
+    float treshold = ofMap(context.time, startTime, endTime, 0.99999f, 0.96f);
+
+    ofSetColor(255);
+    shader->begin();
+    shader->setUniform2f("iPos", ofVec2f(0.0f, progress));
+    shader->setUniform1f("iThreshold", treshold);
+    ofDrawRectangle(0, 0, context.fbo->getWidth(), context.fbo->getHeight());
+    shader->end();
 }
