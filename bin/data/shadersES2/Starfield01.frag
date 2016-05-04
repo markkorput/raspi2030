@@ -1,3 +1,6 @@
+
+precision highp float;
+
 uniform vec2 iPos;
 uniform float iThreshold;
 

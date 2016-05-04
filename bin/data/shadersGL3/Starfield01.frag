@@ -1,3 +1,7 @@
+#version 150
+
+out vec4 outputColor;
+
 uniform vec2 iPos;
 uniform float iThreshold;
 
@@ -40,5 +44,5 @@ void main(void)
         vColor += vec3( StarVal );
     }
 
-    gl_FragColor = vec4(vColor, 1.0);
+    outputColor = vec4(vColor, 1.0);
 }
