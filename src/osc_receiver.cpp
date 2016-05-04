@@ -194,6 +194,7 @@ void OscReceiver::processMessageMessage(ofxOscMessage &m){
     }
 
     string messageType = m.getArgAsString(0);
+    ofLogVerbose() <<  "[OscReceiver] /message " << messageType;
 
     if(messageType == "cursor"){
         effects::Cursor* cursor_effect = new effects::Cursor();
@@ -204,7 +205,12 @@ void OscReceiver::processMessageMessage(ofxOscMessage &m){
     if(messageType == "stars"){
         effects::Stars* effect = new effects::Stars();
         ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
-        ofLog() << "stars effect";
+        return;
+    }
+
+    if(messageType == "vid"){
+        effects::Vid* effect = new effects::Vid();
+        ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
         return;
     }
 

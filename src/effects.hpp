@@ -25,7 +25,8 @@ namespace of2030{ namespace effects {
         OFF = 0,
         COLOR = 1,
         CURSOR = 2,
-        STARS = 3
+        STARS = 3,
+        VID = 4
     };
 
     #define NO_TIME (-1.0f)
@@ -99,6 +100,18 @@ namespace of2030{ namespace effects {
 
     public: // attributes
         ofShader *shader;
+    };
+
+
+
+    class Vid : public Effect{
+    public: // methods
+        Vid();
+        virtual void setup(Context &context);
+        virtual void draw(Context &context);
+
+    public: // attributes
+        ofVideoPlayer *video_player;
     };
 
 
