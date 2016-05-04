@@ -1,4 +1,5 @@
 <of2030>
+    <log_level></log_level>
     <screen_width>768</screen_width>
     <screen_height>576</screen_height>
     <osc_port>2030</osc_port>

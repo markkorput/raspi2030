@@ -34,7 +34,7 @@ namespace of2030 {
 
     private: // attributes
         static ShaderManager* singleton;
-        map<string, ofshader*> shaders;
+        map<string, ofShader*> shaders;
         string folder_path;
     };
 }

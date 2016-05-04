@@ -36,7 +36,7 @@ ShaderManager::ShaderManager(){
       folder_path = "shadersGL2/";
   #endif
 
-  ofLog(__func__) << "using shader folder: " << folder_path;
+  ofLogNotice(__func__) << "using shader folder: " << folder_path;
 }
 
 ShaderManager::~ShaderManager(){
@@ -68,7 +68,7 @@ void ShaderManager::destroy(){
   }
 
   // clear our internal map of loaded shaders
-  shaders.clear()
+  shaders.clear();
 }
 
 ofShader* ShaderManager::load(string name){
@@ -94,9 +94,9 @@ ofShader* ShaderManager::get(string name, bool load){
     // }
 
     // try to find already-loaded shader by name
-    std::map<string, ofshader*>::iterator it = shaders.find(name);
-    if (it != mymap.end()) // found!
-      return it.second;
+    std::map<string, ofShader*>::iterator it = shaders.find(name);
+    if (it != shaders.end()) // found!
+      return it->second;
 
     // load new shader?
     if(load){
