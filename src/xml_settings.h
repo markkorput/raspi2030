@@ -27,7 +27,9 @@ namespace of2030{
         void save();
 
         std::string path;
+
         bool loaded;
+        string log_level;
         int osc_port,
             client_id,
             screen_width,

@@ -8,6 +8,18 @@ void ofApp::setup(){
   xml_settings = of2030::XmlSettings::instance();
   xml_settings->load();
 
+  // set app-wide log-leel based on configuration
+  map<string, ofLogLevel> level_map = {
+    {"verbose", OF_LOG_VERBOSE},
+    {"notice", OF_LOG_NOTICE},
+    {"warning", OF_LOG_WARNING},
+    {"error", OF_LOG_ERROR},
+    {"fatal", OF_LOG_FATAL_ERROR},
+    {"silent", OF_LOG_SILENT}
+    {"", OF_LOG_NOTICE}
+  };
+  ofSetLogLevel(level_map[xml_settings->log_level]);
+
   client_info = of2030::ClientInfo::instance();
   client_info->id = xml_settings->client_id;
 
