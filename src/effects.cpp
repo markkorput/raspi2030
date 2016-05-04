@@ -7,6 +7,7 @@
 //
 
 #include "effects.hpp"
+#include "shader_manager.hpp"
 
 using namespace of2030::effects;
 
@@ -112,21 +113,12 @@ Stars::Stars(){
 
 void Stars::setup(Context &context){
     Effect::setup(context);
-
-    #ifdef TARGET_OPENGLES
-        shader.load("shaders_gles/Starfield01.vert","shaders_gles/Starfield01.frag");
-    #else
-        if(ofIsGLProgrammableRenderer()){
-            shader.load("shaders_gl3/Starfield01.vert", "shaders_gl3/Starfield01.frag");
-        }else{
-            shader.load("shaders/Starfield01.vert", "shaders/Starfield01.frag");
-        }
-    #endif
+    shader = ShaderManager::instance()->get("Starfield01");
 }
 
 void Stars::draw(Context &context){
     ofSetColor(255);
-    shader.begin();
+    shader->begin();
     ofDrawRectangle(0, 0, context.fbo->getWidth(), context.fbo->getHeight());
-    shader.end();
+    shader->end();
 }

@@ -98,7 +98,7 @@ namespace of2030{ namespace effects {
         virtual void draw(Context &context);
 
     public: // attributes
-        ofShader shader;
+        ofShader *shader;
     };
 
 
