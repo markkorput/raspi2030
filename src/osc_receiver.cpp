@@ -209,6 +209,12 @@ void OscReceiver::processMessageMessage(ofxOscMessage &m){
         return;
     }
 
+    if(messageType == "worms"){
+        effects::Worms* effect = new effects::Worms();
+        ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
+        return;
+    }
+
     if(messageType == "vid"){
         effects::Vid* effect = new effects::Vid();
         ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);

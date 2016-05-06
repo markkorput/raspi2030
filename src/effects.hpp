@@ -10,6 +10,7 @@
 #define effect_hpp
 
 #include "ofMain.h"
+#include "setting_types.h"
 
 namespace of2030{ namespace effects {
 
@@ -18,6 +19,8 @@ namespace of2030{ namespace effects {
         int client_id;
         int client_index;
         int client_count;
+        ClientSetting *client_setting;
+        EffectSetting effect_setting;
         ofFbo* fbo;
     } Context;
 
@@ -26,7 +29,8 @@ namespace of2030{ namespace effects {
         COLOR = 1,
         CURSOR = 2,
         STARS = 3,
-        VID = 4
+        VID = 4,
+        WORMS = 5
     };
 
     #define NO_TIME (-1.0f)
@@ -53,10 +57,19 @@ namespace of2030{ namespace effects {
         int cid;
         float startTime, endTime, duration;
         EffectType type;
+        string name;
 
         static int cidCounter;
     };
 
+    class EffectLogic{
+    public:
+        EffectLogic(Effect *_effect, Context *_context) : effect(_effect), context(_context){}
+        float getEffectTime();
+
+        Context *context;
+        Effect *effect;
+    };
 
 
     class Off : public Effect{
@@ -91,8 +104,29 @@ namespace of2030{ namespace effects {
     };
 
 
+    class CursorLogic : public EffectLogic{
+    public:
+        CursorLogic(Effect *_effect, Context *_context) : EffectLogic(_effect, _context){}
+        inline float getGlobalDuration();
+        inline float getIterations();
+        inline float getIterationDuration();
+        inline int getCurrentIteration();
+        inline float getIterationTime();
+        inline float getIterationProgress();
+        inline float getLocalProgress();
+    };
 
-    class Stars : public Effect{
+    class ShaderEffect : public Effect{
+    public:
+        //ShaderEffect();
+        virtual void setup(Context &context);
+        //virtual void draw(Context &context);
+    public:
+        string shaderName;
+        ofShader *shader;
+    };
+
+    class Stars : public ShaderEffect{
     public: // methods
         Stars();
         virtual void setup(Context &context);
@@ -102,7 +136,12 @@ namespace of2030{ namespace effects {
         ofShader *shader;
     };
 
-
+    class Worms : public ShaderEffect{
+    public: // methods
+        Worms();
+        //virtual void setup(Context &context);
+        virtual void draw(Context &context);
+    };
 
     class Vid : public Effect{
     public: // methods

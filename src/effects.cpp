@@ -19,6 +19,8 @@ Effect::Effect() : startTime(NO_TIME), endTime(NO_TIME), type(EffectType::OFF) {
     // every effect instance gets a unique cid (client-side-id)
     cid = cidCounter;
     cidCounter++;
+    duration = 3.0;
+    name = "effect";
 }
 
 void Effect::setup(Context &context){
@@ -50,9 +52,14 @@ float Effect::getDuration(){
     return -1.0;
 }
 
+float EffectLogic::getEffectTime(){
+    return context->time - effect->startTime;
+}
+
 
 Off::Off(){
   type = EffectType::OFF;
+  name = "off";
 }
 
 void Off::draw(Context &context){
@@ -65,6 +72,7 @@ void Off::draw(Context &context){
 Color::Color(){
     type = EffectType::COLOR;
     color = ofColor::black;
+    name = "color";
 }
 
 void Color::draw(Context &context){
@@ -76,46 +84,45 @@ void Color::draw(Context &context){
 
 Cursor::Cursor(){
     type = EffectType::CURSOR;
-    duration = 3.0;
+    name = "cursor";
 }
 
 void Cursor::draw(Context &context){
-    int idx = context.client_index;
-    int client_count = context.client_count;
+  CursorLogic logic((Effect*)this, &context);
 
-    float duration = getDuration();
-    float effectTime = context.time - startTime;
-    float localDuration = duration / client_count;
-    float localStart = localDuration * idx;
+  ofSetColor(255);
+  ofDrawRectangle(logic.getLocalProgress() * context.fbo->getWidth(),
+                  0,
+                  context.effect_setting.getValue("width", 10.0f),
+                  context.fbo->getHeight());
+}
 
-    if(effectTime < localStart)
-    // nothing for us to do (yet)
-    return;
+float CursorLogic::getGlobalDuration(){     return effect->endTime - effect->startTime; }
+float CursorLogic::getIterations(){         return 1.0; } // not supported yet
+float CursorLogic::getIterationDuration(){  return getGlobalDuration() / getIterations(); } // not supported yet
+int CursorLogic::getCurrentIteration(){     return floor(getEffectTime() / getIterationDuration()); }
+float CursorLogic::getIterationTime(){      return getEffectTime() - getCurrentIteration() * getIterationDuration(); }
+float CursorLogic::getIterationProgress(){  return getIterationTime() / getIterationDuration(); }
+float CursorLogic::getLocalProgress(){
+    return ofMap(getIterationProgress(),
+                 context->client_setting->pano_start,
+                 context->client_setting->pano_end,
+                 0.0, 1.0);
+}
 
-    float localEffectTime = effectTime - localStart;
+// ==============
+// Shader Effects
+// ==============
 
-    if(localEffectTime > localDuration)
-    // our part is done
-    return;
-
-    float localProgress = localEffectTime / localDuration;
-
-    ofSetColor(255);
-    ofDrawRectangle(localProgress * context.fbo->getWidth(),
-                    0,
-                    3,
-                    context.fbo->getHeight());
+void ShaderEffect::setup(Context &context){
+    Effect::setup(context);
+    shader = ShaderManager::instance()->get(shaderName);
 }
 
 
 Stars::Stars(){
     type = EffectType::STARS;
-    duration = 3.0;
-}
-
-void Stars::setup(Context &context){
-    Effect::setup(context);
-    shader = ShaderManager::instance()->get("Starfield01");
+    name = "stars";
 }
 
 void Stars::draw(Context &context){
@@ -131,10 +138,35 @@ void Stars::draw(Context &context){
 }
 
 
+Worms::Worms(){
+    type = EffectType::WORMS;
+    shaderName = "worms";
+    name = "worms";
+}
+
+void Worms::draw(Context &context){
+    ofSetColor(255);
+    ShaderEffect::draw(context);
+
+    ofSetColor(255);
+    shader->begin();
+        shader->setUniform1f("iTime", context.time);
+        ofDrawRectangle(0, 0, context.fbo->getWidth(), context.fbo->getHeight());
+    shader->end();
+}
+
+
+
+// ============
+// Video Effect
+// ============
+
+
 
 Vid::Vid(){
     type = EffectType::VID;
     duration = 3.0f;
+    name = "vid";
 }
 
 void Vid::setup(Context &context){
