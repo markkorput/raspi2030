@@ -9,6 +9,7 @@
 #ifndef effect_hpp
 #define effect_hpp
 
+//#include <stdio.h>
 #include "ofMain.h"
 #include "setting_types.h"
 
@@ -16,9 +17,7 @@ namespace of2030{ namespace effects {
 
     typedef struct {
         float time;
-        int client_id;
-        int client_index;
-        int client_count;
+        int client_id, client_index, client_count;
         ClientSetting *client_setting;
         EffectSetting effect_setting;
         ofFbo* fbo;
@@ -35,8 +34,6 @@ namespace of2030{ namespace effects {
 
     #define NO_TIME (-1.0f)
 
-
-
     class Effect{
 
     public: // methods
@@ -50,6 +47,7 @@ namespace of2030{ namespace effects {
         bool hasStartTime(){ return startTime >= 0.0f; }
         bool hasEndTime(){ return endTime >= 0.0f; }
         bool hasDuration(){ return duration >= 0.0f; }
+
         float getDuration();
 
     public: // properties
@@ -90,10 +88,12 @@ namespace of2030{ namespace effects {
         // virtual void setup(Context &context);
         virtual void draw(Context &context);
 
+        float getGlobalDuration();
+        float getIterations();
+
     public: // attributes
         ofColor color;
     };
-
 
     class Cursor : public Effect{
 
@@ -102,7 +102,6 @@ namespace of2030{ namespace effects {
         // virtual void setup(Context &context);
         virtual void draw(Context &context);
     };
-
 
     class CursorLogic : public EffectLogic{
     public:
@@ -115,6 +114,7 @@ namespace of2030{ namespace effects {
         inline float getIterationProgress();
         inline float getLocalProgress();
     };
+
 
     class ShaderEffect : public Effect{
     public:
@@ -129,11 +129,8 @@ namespace of2030{ namespace effects {
     class Stars : public ShaderEffect{
     public: // methods
         Stars();
-        virtual void setup(Context &context);
+        // virtual void setup(Context &context);
         virtual void draw(Context &context);
-
-    public: // attributes
-        ofShader *shader;
     };
 
     class Worms : public ShaderEffect{
@@ -152,7 +149,6 @@ namespace of2030{ namespace effects {
     public: // attributes
         ofVideoPlayer *video_player;
     };
-
 
 }} // namespace of2030{ namespace effects {
 

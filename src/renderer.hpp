@@ -13,23 +13,16 @@
 #include "player.hpp"
 #include "effects.hpp"
 #include "client_info.hpp"
+#include "setting_types.h"
 
 namespace of2030 {
-
+    
     class Renderer{
-
+        
     public:
         const static int WIDTH = 768;
         const static int HEIGHT = 576;
-
-    public: // singleton accessor method
-
-        static Renderer* instance();
-
-    private: // singleton static attribute
-
-        static Renderer* singleton;
-
+        
     public: // methods
         Renderer();
         ~Renderer();
@@ -38,18 +31,20 @@ namespace of2030 {
         // void update();
         void destroy();
         void draw();
-
+            
     private: // callbacks
-
+        
         void registerRealtimeEffectCallback(bool reg=true);
         void onRealtimeEffect(effects::Effect &effect);
+        void fillContext(effects::Context &context, effects::Effect &effect);
+        void fillContextClientInfo(effects::Context &context);
+        void fillEffectSetting(effects::Effect &effect, EffectSetting &fxsetting);
 
     public: // properties
-
+        
         Player *player;
         ClientInfo *client_info;
         ofFbo* fbo;
-        bool m_bPrivateFbo, m_bRegistered;
     };
 }
 
