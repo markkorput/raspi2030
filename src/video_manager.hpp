@@ -15,21 +15,20 @@ namespace of2030 {
     class VideoManager {
 
     public: // methods/interface
-
+        
         static VideoManager* instance();
-        // VideoManager();
+        VideoManager();
         ~VideoManager();
 
-        // void setup();
-        // void update();
-        void destroy();
+        void setup();
+        void update();
 
         ofVideoPlayer* load(string video_name);
         ofVideoPlayer* get(string video_name, bool load=true);
-
+    
     protected:
         string video_name_to_path(string video_name);
-
+    
     private: // attributes
         static VideoManager* singleton;
         vector<ofVideoPlayer*> players;

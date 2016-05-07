@@ -1,73 +1,52 @@
 #include "ofApp.h"
 
+#include "interface.hpp"
+#include "xml_clients.hpp"
+#include "xml_effects.hpp"
+
 //--------------------------------------------------------------
 void ofApp::setup(){
-  ofLogToFile("log.txt", true);
+    ofLogToFile("log.txt", true);
 
-  // settings and config
-  xml_settings = of2030::XmlSettings::instance();
-  xml_settings->load();
+    m_xmlSettings.load();
+    ofSetLogLevel(m_xmlSettings.log_level);
 
-  // set app-wide log-leel based on configuration
-  map<string, ofLogLevel> level_map = {
-    {"verbose", OF_LOG_VERBOSE},
-    {"notice", OF_LOG_NOTICE},
-    {"warning", OF_LOG_WARNING},
-    {"error", OF_LOG_ERROR},
-    {"fatal", OF_LOG_FATAL_ERROR},
-    {"silent", OF_LOG_SILENT},
-    {"", OF_LOG_NOTICE}
-  };
-  ofSetLogLevel(level_map[xml_settings->log_level]);
-  ofLogNotice(__func__) << "log level: " << xml_settings->log_level;
+    of2030::XmlClients::instance()->load();
+    of2030::XmlEffects::instance()->load();
 
-  client_info = of2030::ClientInfo::instance();
-  client_info->id = xml_settings->client_id;
+    m_clientInfo = of2030::ClientInfo::instance();
+    m_clientInfo->setup();
 
-  // incoming data
-  interface = of2030::Interface::instance();
-  osc_receiver.configure(xml_settings->osc_port, interface);
+    m_oscReceiver.configure(m_xmlSettings.osc_setting);
+    m_oscReceiver.setup();
 
-  // visual playback system
-  player = of2030::Player::instance();
-  renderer = of2030::Renderer::instance();
+    m_player = of2030::Player::instance();
+    m_player->start();
 
-  renderer->setup();
-  player->start();
-  interface_player_bridge.start();
-  osc_receiver.setup();
+    // the InterfacePlayerBridge class auto-initializes with the
+    // interface and player singleton instances
+    m_interface_player_bridge.start();
+
+    m_renderer.setup();
+
+    ofAddListener(of2030::Interface::instance()->reconfigSettingsEvent, this, &ofApp::onReconfigSettings);
+    ofAddListener(of2030::Interface::instance()->reconfigClientsEvent, this, &ofApp::onReconfigClients);
+    ofAddListener(of2030::Interface::instance()->reconfigEffectsEvent, this, &ofApp::onReconfigEffects);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-  osc_receiver.update();
-  player->update();
+    m_oscReceiver.update();
+    m_player->update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-  renderer->draw();
+  m_renderer.draw();
 }
 
 //--------------------------------------------------------------
 void ofApp::exit(ofEventArgs &args){
-  osc_receiver.destroy();
-  interface_player_bridge.stop();
-
-  delete renderer;
-  renderer = NULL;
-
-  delete player;
-  player = NULL;
-
-  delete interface;
-  interface = NULL;
-
-  delete client_info;
-  client_info = NULL;
-
-  delete xml_settings;
-  xml_settings = NULL;
 }
 
 //--------------------------------------------------------------
@@ -123,4 +102,24 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){
 
+}
+
+void ofApp::onReconfigSettings(string &path){
+    m_xmlSettings.load();
+    ofSetLogLevel(m_xmlSettings.log_level);
+    m_oscReceiver.configure(m_xmlSettings.osc_setting);
+}
+
+void ofApp::onReconfigClients(string &path){
+    of2030::XmlEffects::instance()->load();
+    of2030::XmlClients* instance = of2030::XmlClients::instance();
+    if(path != "") instance->path = path;
+    instance->load();
+}
+
+
+void ofApp::onReconfigEffects(string &path){
+    of2030::XmlEffects* inst = of2030::XmlEffects::instance();
+    if(path != "") inst->path = path;
+    inst->load();
 }

@@ -20,10 +20,7 @@ Player* Player::instance(){
 }
 
 
-Player::Player(){
-    m_time = 0.0f;
-    m_bPlaying = false;
-
+Player::Player() : m_time(0.0f), m_bPlaying(false), song("fusion"), clip("fusion2"){
     // initialize with a single "OFF" effect in the queue
     active_effects.push_back(&m_offEffect);
 }
@@ -59,7 +56,7 @@ bool Player::effectActive(effects::Effect &effect){
             return true;
         }
     }
-
+    
     return false;
 }
 
@@ -83,7 +80,7 @@ void Player::setPlaybackTime(float time){
     }
 
     removeActiveEffectsEndingBefore(time);
-    m_time = time;
+    m_time = time;    
 }
 
 void Player::removeActiveEffectsEndingBefore(float time){

@@ -19,32 +19,24 @@ VideoManager* VideoManager::instance(){
     return singleton;
 }
 
-// VideoManager::VideoManager(){
-//
-// }
+VideoManager::VideoManager(){
 
-VideoManager::~VideoManager(){
-  destroy();
 }
 
-// void VideoManager::setup(){
-//
-// }
-//
-// void VideoManager::update(){
-//
-// }
+VideoManager::~VideoManager(){
+    while(!players.empty()){
+        ofVideoPlayer* player = players[-1];
+        players.pop_back();
+        delete player;
+    }
+}
 
-void VideoManager::destroy(){
-  // remove all instances one-by-one until our list is empty
-  while(!players.empty()){
-    // get last instance
-    ofVideoPlayer* player = players[-1];
-    // remove last instance from list
-    players.pop_back();
-    // free instance from memory
-    delete player;
-  }
+void VideoManager::setup(){
+    
+}
+
+void VideoManager::update(){
+    
 }
 
 ofVideoPlayer* VideoManager::load(string video_name){
@@ -64,7 +56,7 @@ ofVideoPlayer* VideoManager::get(string video_name, bool load){
             return players[i];
         }
     }
-
+    
     if(load){
         return this->load(video_name);
     }
