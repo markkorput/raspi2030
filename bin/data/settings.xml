@@ -6,6 +6,7 @@
     <port>2029</port>
     <addresses>
       <effect>/fx</effect>
+      <shader>/fx/shader</shader>
       <control>/ctrl</control>
       <song>/song</song>
       <clip>/clip</clip>
@@ -26,6 +27,5 @@
     <room_scale_x>900</room_scale_x>
     <room_scale_y>200</room_scale_y>
     <room_scale_z>1650.0</room_scale_z>
-    <screen_scale>1</screen_scale>
   </multi> -->
 </of2030>
