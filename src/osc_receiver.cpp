@@ -59,6 +59,19 @@ void OscReceiver::update(){
         message_count++;
 
         string addr = m.getAddress();
+        if(addr == osc_setting->addresses["shader"]){
+            string shader_name = m.getArgAsString(0);
+            if(shader_name == ""){
+                ofLogWarning() << "[osc-in] got " << osc_setting->addresses["shader"] << " message without shader name param";
+                continue;
+            }
+
+            effects::ShaderEffect* fx = new effects::ShaderEffect();
+            fx->setShader(shader_name);
+            ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)fx), m_interface);
+            continue;
+        }
+
         if(addr == osc_setting->addresses["effect"]){
             //ofLogVerbose() << "Got /message OSC Message";
             if(processFxMessage(m))
@@ -103,15 +116,23 @@ void OscReceiver::destroy(){
 
 bool OscReceiver::connect(){
     // m_oscReceiver.enableReuse();
+
+#ifdef __BOOL_OSC_SETUP__
+    if(m_oscReceiver.setup(osc_setting->port)){
+        m_bConnected = true;
+        ofLog() << "of2030::OscReceiver listening to port: " << osc_setting->port;
+        return true;
+    }
+
+    ofLogWarning() << "OscReceiver could not start listening to port: " << osc_setting->port;
+    return false;
+#else
     m_oscReceiver.setup(osc_setting->port);
-    // if(){
     m_bConnected = true;
     ofLog() << "of2030::OscReceiver listening to port: " << osc_setting->port;
     return true;
-    // }
+#endif // __BOOL_OSC_SETUP__
 
-    // ofLogWarning() << "OscReceiver could not start listening to port: " << osc_setting->port;
-    // return false;
 }
 
 void OscReceiver::disconnect(){
@@ -222,20 +243,8 @@ bool OscReceiver::processFxMessage(ofxOscMessage &m){
         return true;
     }
 
-    if(messageType == "stars"){
-        effects::Stars* effect = new effects::Stars();
-        ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
-        return true;
-    }
-
     if(messageType == "vid"){
         effects::Vid* effect = new effects::Vid();
-        ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
-        return true;
-    }
-
-    if(messageType == "worms"){
-        effects::Worms* effect = new effects::Worms();
         ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
         return true;
     }

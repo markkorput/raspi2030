@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ofMain.h"
+#include "shared2030.h"
 
 #include "osc_receiver.hpp"
 #include "player.hpp"
@@ -9,13 +9,20 @@
 #include "client_info.hpp"
 #include "xml_settings.hpp"
 
+#ifdef __MULTI_CLIENT_ENABLED__
+    #include "multi_client.hpp"
+#endif
+
+#include "ofMain.h"
+
+
 class ofApp : public ofBaseApp{
 	public:
 		void setup();
 		void update();
 		void draw();
         void exit(ofEventArgs &args);
-
+    
 		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y);
@@ -27,7 +34,7 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-
+    
         // callbacks
         void onReconfigSettings(string &path);
         void onReconfigClients(string &path);
@@ -40,4 +47,9 @@ class ofApp : public ofBaseApp{
         of2030::InterfacePlayerBridge m_interface_player_bridge;
         of2030::ClientInfo *m_clientInfo;
         of2030::XmlSettings m_xmlSettings;
+    
+#ifdef __MULTI_CLIENT_ENABLED__
+        of2030::MultiClient m_multiClient;
+#endif
+    
 };

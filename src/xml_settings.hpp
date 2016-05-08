@@ -24,9 +24,8 @@ namespace of2030{
         OscSetting osc_setting;
 
         int client_id;
-        // vector<int> multi_client_ids;
-        // float multi_screen_scale;
-        // ofVec3f multi_room_scale;
+        vector<int> multi_client_ids;
+        ofVec3f multi_room_scale;
 
         string log_level_name;
         ofLogLevel log_level;
