@@ -6,7 +6,7 @@ uniform float iDuration;
 uniform float iIterations;
 uniform float iLocalPanoStart;
 uniform float iLocalPanoEnd;
-uniform float iVolume;
+uniform float iGain;
 
 void main(void){
     float iterationDuration = iDuration / iIterations;
@@ -20,7 +20,7 @@ void main(void){
     f = (f - iLocalPanoStart) / (iLocalPanoEnd - iLocalPanoStart);
 
     float alpha = 0.0;
-    if(abs(gl_FragCoord.x - f*iResolution.x) < iVolume){
+    if(abs(gl_FragCoord.x - f*iResolution.x) < iGain){
       alpha = 1.0;
     }
 
