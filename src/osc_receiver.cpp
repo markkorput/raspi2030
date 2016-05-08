@@ -12,18 +12,25 @@
 
 using namespace of2030;
 
-OscReceiver::OscReceiver(){
-  // defaults
-  m_port = 2030;
-  m_interface = NULL;
-  m_bConnected = false;
+OscReceiver::OscReceiver() : m_interface(NULL), m_bConnected(false){
+    default_setting.port = 2030;
+    osc_setting = &default_setting;
 }
 
 void OscReceiver::configure(unsigned int port, Interface* interface){
-    m_port = port;
+    osc_setting->port = port;
 
     if(interface)
         m_interface = interface;
+
+    if(m_bConnected){
+        // reconnect
+        connect();
+    }
+}
+
+void OscReceiver::configure(OscSetting &_osc_setting){
+    this->osc_setting = &_osc_setting;
 
     if(m_bConnected){
         // reconnect
@@ -51,26 +58,53 @@ void OscReceiver::update(){
         m_oscReceiver.getNextMessage(m);
         message_count++;
 
-        // "/change"-type message?
-        // if(m.getAddress() == "/change"){
-        //     ofLogVerbose() << "Got /change OSC Message";
-        //     processChangeMessage(m);
-        //     continue;
-        // }
+        string addr = m.getAddress();
+        if(addr == osc_setting->addresses["shader"]){
+            string shader_name = m.getArgAsString(0);
+            if(shader_name == ""){
+                ofLogWarning() << "[osc-in] got " << osc_setting->addresses["shader"] << " message without shader name param";
+                continue;
+            }
 
-        if(m.getAddress() == "/effect"){
-            // ofLogVerbose() << "Got /effect OSC Message";
-            processEffectMessage(m);
+            effects::ShaderEffect* fx = new effects::ShaderEffect();
+            fx->setShader(shader_name);
+            ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)fx), m_interface);
             continue;
         }
 
-        if(m.getAddress() == "/message"){
-            // ofLogVerbose() << "Got /message OSC Message";
-            processMessageMessage(m);
+        if(addr == osc_setting->addresses["effect"]){
+            //ofLogVerbose() << "Got /message OSC Message";
+            if(processFxMessage(m))
+                continue;
+        }
+
+        if(addr == osc_setting->addresses["control"]){
+            //ofLogVerbose() << "Got /ctrl OSC Message";
+            if(processCtrlMessage(m))
+                continue;
+        }
+
+        if(addr == osc_setting->addresses["song"]){
+            string name = m.getArgAsString(0);
+            ofLogVerbose() << "[osc-in] song: " << name;
+            ofNotifyEvent(m_interface->songEvent, name, m_interface);
             continue;
         }
 
-        ofLog() << "Got unknown OSC Message " << m.getAddress();
+        if(addr == osc_setting->addresses["clip"]){
+            string name = m.getArgAsString(0);
+            ofLogVerbose() << "[osc-in] clip: " << name;
+            ofNotifyEvent(m_interface->clipEvent, name, m_interface);
+            continue;
+        }
+
+        if(addr == "/effect"){
+            //ofLogVerbose() << "Got /effect OSC Message";
+            if(processJsonEffectMessage(m))
+                continue;
+        }
+
+        ofLog() << "Unable to process OSC Message " << m.getAddress();
     }
 }
 
@@ -82,42 +116,49 @@ void OscReceiver::destroy(){
 
 bool OscReceiver::connect(){
     // m_oscReceiver.enableReuse();
-    m_oscReceiver.setup(m_port);
 
-    // if(!success){
-      // ofLogWarning() << "OscReceiver could not start listening to port: " << m_port;
-      // return false;
-    // }
+#ifdef __BOOL_OSC_SETUP__
+    if(m_oscReceiver.setup(osc_setting->port)){
+        m_bConnected = true;
+        ofLog() << "of2030::OscReceiver listening to port: " << osc_setting->port;
+        return true;
+    }
 
+    ofLogWarning() << "OscReceiver could not start listening to port: " << osc_setting->port;
+    return false;
+#else
+    m_oscReceiver.setup(osc_setting->port);
     m_bConnected = true;
-    ofLog() << "of2030::OscReceiver listening to port: " << m_port;
+    ofLog() << "of2030::OscReceiver listening to port: " << osc_setting->port;
     return true;
+#endif // __BOOL_OSC_SETUP__
+
 }
 
 void OscReceiver::disconnect(){
     m_bConnected = false;
 }
 
-void OscReceiver::processEffectMessage(ofxOscMessage &m){
+bool OscReceiver::processJsonEffectMessage(ofxOscMessage &m){
     if(m.getNumArgs() < 1){
         ofLogWarning() << "/effect message didn't have any args";
-        return;
+        return false;
     }
 
     if(m.getArgType(0) != OFXOSC_TYPE_STRING){
         ofLogWarning() << "/effect didn't have string arg";
-        return;
+        return false;
     }
 
     effects::Effect* effect = createEffectFromJsonString(m.getArgAsString(0));
-
-    if(effect){
-        // ofLog() << "[OscReceiver] Triggering interface's effectEvent";
-        ofNotifyEvent(m_interface->effectEvent, *effect, m_interface);
-        return;
+    if(!effect){
+        ofLogWarning() << "Could not create effect instance from OSC /effect message with data: " << m.getArgAsString(0);
+        return false;
     }
 
-    ofLogWarning() << "Could not create effect instance from OSC /effect message with data: " << m.getArgAsString(0);
+    // ofLog() << "[OscReceiver] Triggering interface's effectEvent";
+    ofNotifyEvent(m_interface->effectEvent, *effect, m_interface);
+    return true;
 }
 
 void OscReceiver::getMapFromJsonString(const std::string &str, map<string, string> &target){
@@ -138,11 +179,11 @@ effects::Effect* OscReceiver::createEffectFromJsonString(const std::string &json
     std::string type, value;
 
     ofxJSONElement json;
-    json.parse(json_string);
+    if(!json.parse(json_string))
+        return NULL;
 
-    if(json.isMember("type")){
+    if(json.isMember("type"))
         type = json["type"].asString();
-    }
 
     // create an instance of the appropriate effects class
     // beased on the model's type attribute
@@ -167,7 +208,6 @@ effects::Effect* OscReceiver::createEffectFromJsonString(const std::string &json
 
         ofLogWarning() << "[EffectCreator] got unknown effect model type: " << type;
         pEffect = new effects::Effect();
-
     }
 
     // process some more (optional) general effect attributes
@@ -183,37 +223,75 @@ effects::Effect* OscReceiver::createEffectFromJsonString(const std::string &json
     return pEffect;
 }
 
-void OscReceiver::processMessageMessage(ofxOscMessage &m){
+bool OscReceiver::processFxMessage(ofxOscMessage &m){
     if(m.getNumArgs() < 1){
-        ofLogWarning() << "/message message didn't have any args";
-        return;
+        ofLogWarning() << "/fx message didn't have any args";
+        return true;
     }
 
     if(m.getArgType(0) != OFXOSC_TYPE_STRING){
-        ofLogWarning() << "/message didn't have string arg";
-        return;
+        ofLogWarning() << "/fx didn't have string arg";
+        return true;
     }
 
     string messageType = m.getArgAsString(0);
-    ofLogVerbose() <<  "[OscReceiver] /message " << messageType;
+    ofLogVerbose() << "[osc-in] /fx " << messageType;
 
     if(messageType == "cursor"){
         effects::Cursor* cursor_effect = new effects::Cursor();
         ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)cursor_effect), m_interface);
-        return;
-    }
-
-    if(messageType == "stars"){
-        effects::Stars* effect = new effects::Stars();
-        ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
-        return;
+        return true;
     }
 
     if(messageType == "vid"){
         effects::Vid* effect = new effects::Vid();
         ofNotifyEvent(m_interface->effectEvent, (*(effects::Effect*)effect), m_interface);
-        return;
+        return true;
     }
 
-    ofLogWarning() << "Unknown /message type: " << messageType;
+    ofLogWarning() << "[osc-in] unknown messageType: " << messageType;
+    return false;
+}
+
+bool OscReceiver::processCtrlMessage(ofxOscMessage &m){
+    if(m.getNumArgs() < 1){
+        ofLogWarning() << "/ctrl message didn't have any args";
+        return false;
+    }
+
+    if(m.getArgType(0) != OFXOSC_TYPE_STRING){
+        ofLogWarning() << "/ctrl didn't have string arg";
+        return false;
+    }
+
+    string messageType = m.getArgAsString(0);
+    ofLogVerbose() << "[osc-in] /ctrl " << messageType;
+
+    if(messageType == "reconfig_clients"){
+        string config_path = "";
+        if(m.getNumArgs() >= 2 and m.getArgType(1) == OFXOSC_TYPE_STRING)
+        config_path = m.getArgAsString(1);
+        ofLogVerbose() << "reconfig_clients";
+        ofNotifyEvent(m_interface->reconfigClientsEvent, config_path, m_interface);
+        return true;
+    }
+
+    if(messageType == "reconfig_settings"){
+        string path="";
+        ofLog() << "reconfig_settings";
+        ofNotifyEvent(m_interface->reconfigSettingsEvent, path, m_interface);
+        return true;
+    }
+
+    if(messageType == "reconfig_effects"){
+        string config_path = "";
+        if(m.getNumArgs() >= 2 and m.getArgType(1) == OFXOSC_TYPE_STRING)
+        config_path = m.getArgAsString(1);
+        ofLogVerbose() << "reconfig_effects";
+        ofNotifyEvent(m_interface->reconfigEffectsEvent, config_path, m_interface);
+        return true;
+    }
+
+    ofLogWarning() << "[osc-in] unknown messageType: " << messageType;
+    return false;
 }

@@ -1,0 +1,20 @@
+<of2030>
+  <effects>
+    <effect name="shader-cursor" part="/fusion/fusion2">
+      <width>100</width>
+    </effect>
+    <effect name="shader-cursor" part="/fusion/fusion1">
+      <iterations>3</iterations>
+      <width>10</width>
+    </effect>
+    <effect name="shader-cursor" part="/fusion">
+      <iterations>2</iterations>
+      <width>10</width>
+    </effect>
+    <effect name="shader-cursor">
+      <iterations>1</iterations>
+      <width>10</width>
+      <duration>3</duration>
+    </effect>
+  </effects>
+</of2030>

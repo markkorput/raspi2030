@@ -9,22 +9,24 @@
 #ifndef interface_hpp
 #define interface_hpp
 
+//#include <stdio.h>
 #include "ofMain.h"
 #include "effects.hpp"
 
 namespace of2030 {
-
+    
     class Interface {
 
     public:
         static Interface* instance();
-
-    public: // collection
-        // CMS::Collection<CMS::Model> changes_collection;
-        // CMS::Collection<CMS::Model> effects_collection;
-
+    
     public: // events
         ofEvent<effects::Effect> effectEvent;
+        ofEvent<string> reconfigSettingsEvent;
+        ofEvent<string> reconfigClientsEvent;
+        ofEvent<string> reconfigEffectsEvent;
+        ofEvent<string> songEvent;
+        ofEvent<string> clipEvent;
 
     private:
         static Interface* singleton;

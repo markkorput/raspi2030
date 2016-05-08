@@ -12,8 +12,8 @@
 using namespace of2030;
 
 InterfacePlayerBridge::InterfacePlayerBridge(){
-    m_interface = NULL;
-    m_player = NULL;
+    setInterface(Interface::instance());
+    m_player = Player::instance();
     m_bStarted = false;
 }
 
@@ -23,12 +23,6 @@ InterfacePlayerBridge::~InterfacePlayerBridge(){
 }
 
 void InterfacePlayerBridge::start(){
-    if(m_interface == NULL)
-      setInterface(Interface::instance());
-
-    if(!m_player)
-      m_player = Player::instance();
-
     registerInterfaceCallbacks(true);
     m_bStarted = true;
 }
@@ -54,9 +48,13 @@ void InterfacePlayerBridge::registerInterfaceCallbacks(bool _register){
     if(_register){
         // subscribe to new effect model events of specified interface
         ofAddListener(m_interface->effectEvent, this, &InterfacePlayerBridge::onEffect);
+        ofAddListener(m_interface->songEvent, this, &InterfacePlayerBridge::onSong);
+        ofAddListener(m_interface->clipEvent, this, &InterfacePlayerBridge::onClip);
     } else {
         // unsubscribe from new effect model events of previous interface
         ofRemoveListener(m_interface->effectEvent, this, &InterfacePlayerBridge::onEffect);
+        ofRemoveListener(m_interface->songEvent, this, &InterfacePlayerBridge::onSong);
+        ofRemoveListener(m_interface->clipEvent, this, &InterfacePlayerBridge::onClip);
     }
 }
 
@@ -65,4 +63,12 @@ void InterfacePlayerBridge::onEffect(effects::Effect &effect){
     // finally, add the effect instance to the realtime_composition of the player
     m_player->realtime_composition.add(&effect);
     //    ofLog() << effect.type << "-type effect added to player's realtime composition";
+}
+
+void InterfacePlayerBridge::onSong(string &name){
+    m_player->song = name;
+}
+
+void InterfacePlayerBridge::onClip(string &name){
+    m_player->clip = name;
 }

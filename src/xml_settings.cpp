@@ -7,48 +7,92 @@
 //
 //
 
-#include "xml_settings.h"
+#include "xml_settings.hpp"
 #include "ofxXmlSettings.h"
 
 using namespace of2030;
 
 
-XmlSettings* XmlSettings::singleton = NULL;
+//
+// local methods
+//
 
-XmlSettings* XmlSettings::instance(){
-    if (!singleton){   // Only allow one instance of class to be generated.
-        singleton = new XmlSettings();
+void loadOsc(TiXmlDocument &doc, OscSetting &osc_setting){
+    TiXmlElement *el = doc.FirstChildElement("of2030");
+    if(!el) return;
+
+    el = el->FirstChildElement("osc");
+    if(!el) return;
+
+    el = el->FirstChildElement("addresses");
+    if(!el) return;
+
+    TiXmlElement* child = el->FirstChildElement();
+    string name, val;
+
+    while(child){
+        name = child->ValueStr();
+        val = child->GetText();
+        osc_setting.addresses[name] = val;
+        ofLogVerbose() << "[XmlSettings::loadOsc got: " << name << ":" << val;
+        child = child->NextSiblingElement();
     }
-    return singleton;
 }
 
-XmlSettings::XmlSettings() : path("settings.xml"), loaded(false){
-  if(singleton == NULL){
-    singleton = this;
-  } else {
-    ofLogWarning() << "Non-singleton instance of XmlSettings constructed";
-  }
-};
+//
+// XmlSettings
+//
 
-void XmlSettings::load(bool reload){
-    if(loaded && !reload)
-      return;
-
+void XmlSettings::load(){
     ofxXmlSettings xml;
     xml.loadFile(path);
-    log_level = xml.getValue("of2030:log_level", "notice");
-    osc_port = xml.getValue("of2030:osc_port", 2030);
+
+    log_level_name = xml.getValue("of2030:app:log_level", "");
+    map<string, ofLogLevel> log_level_map = {
+        {"verbose", OF_LOG_VERBOSE},
+        {"notice", OF_LOG_NOTICE},
+        {"silent", OF_LOG_SILENT},
+        {"warning", OF_LOG_WARNING},
+        {"", OF_LOG_NOTICE}
+    };
+    log_level = log_level_map[log_level_name];
+
+    osc_setting.port = xml.getValue("of2030:osc:port", 2030);
+
+    loadOsc(xml.doc, osc_setting);
+
     client_id = xml.getValue("of2030:client_id", 1);
-    screen_width = xml.getValue("of2030:screen_width", 768);
-    screen_height = xml.getValue("of2030:screen_height", 576);
-    loaded = true;
+    multi_client_ids.clear();
+    if(xml.pushTag("of2030")){
+        if(xml.pushTag("multi")){
+            int count = xml.getNumTags("id");
+            for(int i=0; i<count; i++){
+                int id = xml.getValue("id", 0, i);
+                multi_client_ids.push_back(id);
+            }
+            multi_room_scale = ofVec3f(xml.getValue("room_scale_x", 1.0f),
+                                       xml.getValue("room_scale_y", 1.0f),
+                                       xml.getValue("room_scale_z", 1.0f));
+        }
+    }
+
 }
 
 void XmlSettings::save(){
     ofxXmlSettings xml;
-    xml.setValue("of2030:osc_port", osc_port);
+    xml.setValue("of2030:osc:port", osc_setting.port);
+    xml.setValue("of2030:osc:port", osc_setting.port);
+
     xml.setValue("of2030:client_id", client_id);
-    xml.setValue("of2030:screen_width", screen_width);
-    xml.setValue("of2030:screen_height", screen_height);
+
+    if(multi_client_ids.size() > 0){
+        if(xml.pushTag("of2030")){
+            if(xml.pushTag("multi")){
+                for(int i=0; i<multi_client_ids.size(); i++){
+                    xml.setValue("id", multi_client_ids[i], i);
+                }
+            }
+        }
+    }
     xml.saveFile(path);
 }

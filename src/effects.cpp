@@ -7,33 +7,28 @@
 //
 
 #include "effects.hpp"
-#include "shader_manager.hpp"
 #include "video_manager.hpp"
-
+#include "shader_manager.hpp"
 
 using namespace of2030::effects;
 
 int Effect::cidCounter = 0;
 
-Effect::Effect() : startTime(NO_TIME), endTime(NO_TIME), type(EffectType::OFF) {
+Effect::Effect() : startTime(NO_TIME), endTime(NO_TIME) {
     // every effect instance gets a unique cid (client-side-id)
     cid = cidCounter;
     cidCounter++;
+    duration = 3.0;
 }
 
 void Effect::setup(Context &context){
-  // make sure the effect has a start time;
-  // if it didn't get a startTime from the creator,
-  // simple take the current time from the context
-  if(!hasStartTime()){
-      startTime = context.time;
-  }
+    if(!hasStartTime()){
+        startTime = context.time;
+    }
 
-  // try to calculate endTime from startTime and duration
-  // if endTime wasn't specified
-  if(hasDuration() && hasStartTime() && !hasEndTime()){
-      endTime = startTime + duration;
-  }
+    if(hasDuration() && hasStartTime() && !hasEndTime()){
+        endTime = startTime + duration;
+    }
 }
 
 void Effect::draw(Context &context){
@@ -50,9 +45,19 @@ float Effect::getDuration(){
     return -1.0;
 }
 
+void Effect::setType(EffectType effect_type){
+    type = effect_type;
+    name = EFFECT_NAMES[effect_type];
+}
+
+
+float EffectLogic::getGlobalTime(){ return context->time - effect->startTime; }
+float EffectLogic::getGlobalDuration(){ return effect->endTime - effect->startTime; }
+float EffectLogic::getGlobalProgress(){ return getGlobalTime() / getGlobalDuration(); }
+
 
 Off::Off(){
-  type = EffectType::OFF;
+    setType(EffectType::OFF);
 }
 
 void Off::draw(Context &context){
@@ -63,86 +68,96 @@ void Off::draw(Context &context){
 
 
 Color::Color(){
-    type = EffectType::COLOR;
+    setType(EffectType::COLOR);
     color = ofColor::black;
 }
+
 
 void Color::draw(Context &context){
     ofBackground(color);
 }
 
 
-
-
 Cursor::Cursor(){
-    type = EffectType::CURSOR;
-    duration = 3.0;
+    setType(EffectType::CURSOR);
 }
 
 void Cursor::draw(Context &context){
-    int idx = context.client_index;
-    int client_count = context.client_count;
-
-    float duration = getDuration();
-    float effectTime = context.time - startTime;
-    float localDuration = duration / client_count;
-    float localStart = localDuration * idx;
-
-    if(effectTime < localStart)
-    // nothing for us to do (yet)
-    return;
-
-    float localEffectTime = effectTime - localStart;
-
-    if(localEffectTime > localDuration)
-    // our part is done
-    return;
-
-    float localProgress = localEffectTime / localDuration;
+    CursorLogic logic((Effect*)this, &context);
 
     ofSetColor(255);
-    ofDrawRectangle(localProgress * context.fbo->getWidth(),
+    ofDrawRectangle(logic.getLocalProgress() * context.fbo->getWidth(),
                     0,
-                    3,
+                    context.effect_setting.getValue("width", 10.0f),
                     context.fbo->getHeight());
 }
 
-
-Stars::Stars(){
-    type = EffectType::STARS;
-    duration = 3.0;
+float CursorLogic::getIterations(){         return context->effect_setting.getValue("iterations", 1.0f); } // not supported yet
+float CursorLogic::getIterationDuration(){  return getGlobalDuration() / getIterations(); } // not supported yet
+int CursorLogic::getCurrentIteration(){     return floor(getGlobalTime() / getIterationDuration()); }
+float CursorLogic::getIterationTime(){      return getGlobalTime() - getCurrentIteration() * getIterationDuration(); }
+float CursorLogic::getIterationProgress(){  return getIterationTime() / getIterationDuration(); }
+float CursorLogic::getLocalProgress(){
+    return ofMap(getIterationProgress(),
+                 context->client_setting->pano_start,
+                 context->client_setting->pano_end,
+                 0.0, 1.0);
 }
 
-void Stars::setup(Context &context){
+// ==============
+// Shader Effects
+// ==============
+
+ShaderEffect::ShaderEffect(){
+    setType(EffectType::SHADER);
+    // empty shaderName, means the ShaderEffect
+    // will use its name attribute as shader name
+    shaderName = "";
+}
+
+void ShaderEffect::setup(Context &context){
     Effect::setup(context);
-    shader = ShaderManager::instance()->get("Starfield01");
+    shader = ShaderManager::instance()->get(shaderName == "" ? name : shaderName);
 }
 
-void Stars::draw(Context &context){
-    float progress = ofMap(context.time, startTime, endTime, 250.0f, -50.0f);
-    float treshold = ofMap(context.time, startTime, endTime, 0.99999f, 0.96f);
+void ShaderEffect::draw(Context &context){
+    if(!shader->isLoaded()) return;
 
+    EffectLogic logic((Effect*)this, &context);
+    
     ofSetColor(255);
     shader->begin();
-    shader->setUniform2f("iPos", ofVec2f(0.0f, progress));
-    shader->setUniform1f("iThreshold", treshold);
-    ofDrawRectangle(0, 0, context.fbo->getWidth(), context.fbo->getHeight());
+        // shader->setUniform1f("iTime", context.time);
+        shader->setUniform2f("iResolution", ofVec2f(context.fbo->getWidth(), context.fbo->getHeight()));
+        shader->setUniform1f("iProgress", logic.getGlobalProgress());
+        shader->setUniform1f("iDuration", logic.getGlobalDuration());
+        shader->setUniform1f("iIterations", context.effect_setting.getValue("iterations", 1.0f));
+        shader->setUniform1f("iLocalPanoStart", context.client_setting->pano_start);
+        shader->setUniform1f("iLocalPanoEnd", context.client_setting->pano_end);
+        shader->setUniform1f("iVolume", context.effect_setting.getValue("width", 1.0f));
+        ofDrawRectangle(0, 0, context.fbo->getWidth(), context.fbo->getHeight());
     shader->end();
 }
 
+void ShaderEffect::setShader(string _name){
+    shaderName = _name;
+    name = "shader-" + _name;
+}
+
+
+// ============
+// Video Effect
+// ============
 
 
 Vid::Vid(){
-    type = EffectType::VID;
-    duration = 3.0f;
+    setType(EffectType::VID);
 }
 
 void Vid::setup(Context &context){
     Effect::setup(context);
     video_player = VideoManager::instance()->get("fingers.mov", true);
-    // video_player->setLoopState(OF_LOOP_NORMAL);
-    // TODO; loop? when to stop loop?
-    // notify manager when done?
+    video_player->setLoopState(OF_LOOP_NORMAL);
     video_player->play();
 }
 
